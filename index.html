@@ -1,170 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Love Ledger Dashboard</title>
-  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: #fffafc;
-      color: #333;
-      text-align: center;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      background: linear-gradient(90deg, #ff99cc, #ffccff);
-      padding: 20px;
-      color: white;
-      font-size: 1.8em;
-      font-weight: bold;
-    }
-    .container {
-      padding: 20px;
-      max-width: 1200px;
-      margin: auto;
-    }
-    .chart {
-      margin: 30px 0;
-    }
-    input[type="file"] {
-      margin: 15px 0;
-      padding: 8px;
-    }
-    video {
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
-      margin-top: 20px;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Love Ledger Dashboard</title>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<style>
+  body { margin:0; font-family:'Poppins',sans-serif; scroll-behavior:smooth;}
+  section {min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center;}
+  .intro {
+    background: radial-gradient(circle at top, #6b63ff 0%, #0d1129 80%);
+    color:white; text-align:center; padding:40px;
+  }
+  .intro h1 {font-size:3em; margin-bottom:0.2em;}
+  .intro p {font-size:1.3em; color:#dcd6ff;}
+  .intro button {
+    margin-top:2em; padding:15px 25px; border:none; border-radius:8px;
+    background:#c7a9ff; color:#0d1129; font-weight:bold; font-size:1em;
+    cursor:pointer; transition:0.3s; box-shadow:0 0 10px #c7a9ff;
+  }
+  .intro button:hover {background:#fff; color:#6b63ff;}
+  .dashboard {background:#faf7ff; color:#333; padding:40px;}
+  .chart {margin:40px 0; width:90%; max-width:1000px;}
+  .blush-btn {
+    background:#b07cff; color:white; border:none; padding:15px 25px;
+    border-radius:8px; font-size:1em; cursor:pointer; transition:0.3s;
+  }
+  .blush-btn:hover {background:#a45cf5;}
+  video {margin-top:20px; width:320px; border-radius:12px; display:none;}
+</style>
 </head>
 <body>
-  <header>💗 Relationship Performance Dashboard</header>
-  <div class="container">
-    <p>Upload your <strong>LoveLedger_Sample.json</strong> file to visualize your relationship metrics.</p>
-    <input type="file" id="fileInput" accept="application/json">
 
-    <p>Optional: upload a short <strong>birthday video</strong> (MP4)</p>
-    <input type="file" id="videoInput" accept="video/mp4">
-    <video id="videoPlayer" width="480" controls style="display:none;"></video>
+<section class="intro" id="intro">
+  <h1>Happy Birthday Pranavi 💙</h1>
+  <p>It's your silver jubilee, PJ — 4/25 years of us</p>
+  <button onclick="document.getElementById('dashboard').scrollIntoView({behavior:'smooth'});">View Our Story Metrics →</button>
+</section>
 
-    <div id="summary" class="chart"></div>
-    <div id="moodChart" class="chart"></div>
-    <div id="trustChart" class="chart"></div>
-    <div id="ltvChart" class="chart"></div>
-    <div id="eventChart" class="chart"></div>
-  </div>
+<section class="dashboard" id="dashboard">
+  <h2 style="color:#6b63ff;">Relationship Performance Dashboard</h2>
+  <div id="summary" class="chart"></div>
+  <div id="moodChart" class="chart"></div>
+  <div id="trustChart" class="chart"></div>
+  <div id="ltvChart" class="chart"></div>
+  <div id="eventChart" class="chart"></div>
+  <button class="blush-btn" onclick="revealVideo()">Click Here to Get Blush 💫</button>
+  <video id="loveVideo" controls>
+    <source src="Funniest 5 Second Video Ever!.mp4" type="video/mp4" />
+  </video>
+</section>
 
-  <script>
-    // Handle JSON upload
-    document.getElementById('fileInput').addEventListener('change', handleFile);
+<script>
+// --- embedded sample data (short version of your JSON) ---
+const data = [
+  {"Date":"2020-01-10","EventType":"Movie Night","MoodScore":8,"TrustScore":95,"CumulativeAffection":20},
+  {"Date":"2020-02-14","EventType":"Valentine","MoodScore":10,"TrustScore":98,"CumulativeAffection":40},
+  {"Date":"2020-06-21","EventType":"Trip","MoodScore":9,"TrustScore":97,"CumulativeAffection":65},
+  {"Date":"2021-01-01","EventType":"New Year","MoodScore":7,"TrustScore":93,"CumulativeAffection":80},
+  {"Date":"2021-07-04","EventType":"Dinner","MoodScore":6,"TrustScore":85,"CumulativeAffection":95},
+  {"Date":"2022-02-14","EventType":"Anniversary","MoodScore":9,"TrustScore":92,"CumulativeAffection":115},
+  {"Date":"2023-03-10","EventType":"Gift","MoodScore":8,"TrustScore":90,"CumulativeAffection":130},
+  {"Date":"2023-12-20","EventType":"Fight","MoodScore":3,"TrustScore":60,"CumulativeAffection":120},
+  {"Date":"2024-01-15","EventType":"Apology","MoodScore":6,"TrustScore":70,"CumulativeAffection":130}
+];
 
-    function handleFile(event) {
-      const file = event.target.files[0];
-      if (!file) return;
+function revealVideo() {
+  const vid=document.getElementById('loveVideo');
+  vid.style.display='block';
+  vid.scrollIntoView({behavior:'smooth'});
+}
 
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const jsonData = JSON.parse(e.target.result);
-        renderDashboard(jsonData);
-      };
-      reader.readAsText(file);
-    }
+// --- dashboard render ---
+const dates=data.map(d=>d.Date);
+const mood=data.map(d=>d.MoodScore);
+const trust=data.map(d=>d.TrustScore);
+const affection=data.map(d=>d.CumulativeAffection);
+const eventTypes=[...new Set(data.map(d=>d.EventType))];
 
-    // Handle video upload
-    document.getElementById('videoInput').addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const url = URL.createObjectURL(file);
-      const player = document.getElementById('videoPlayer');
-      player.src = url;
-      player.style.display = 'block';
-    });
+const avgMood=(mood.reduce((a,b)=>a+b,0)/mood.length).toFixed(1);
+const avgTrust=(trust.reduce((a,b)=>a+b,0)/trust.length).toFixed(1);
+const finalAffection=affection[affection.length-1];
 
-    // Main dashboard rendering
-    function renderDashboard(data) {
-      const dates = data.map(d => d.Date);
-      const mood = data.map(d => d.MoodScore);
-      const trust = data.map(d => d.TrustScore);
-      const affection = data.map(d => d.CumulativeAffection);
-      const eventTypes = [...new Set(data.map(d => d.EventType))];
+document.getElementById('summary').innerHTML=
+  `<h3>Key Metrics</h3>
+   <p><b>Avg Mood:</b> ${avgMood} |
+   <b>Avg Trust:</b> ${avgTrust}% |
+   <b>Total Affection Units:</b> ${finalAffection}</p>`;
 
-      const avgMood = (mood.reduce((a,b) => a+b, 0) / mood.length).toFixed(1);
-      const avgTrust = (trust.reduce((a,b) => a+b, 0) / trust.length).toFixed(1);
-      const finalAffection = affection[affection.length - 1];
+Plotly.newPlot('moodChart',[{
+  x:dates,y:mood,type:'bar',
+  marker:{color:mood.map(m=>m>=7?'#9be7ff':'#f78da7')}
+}],{title:'Mood Over Time',xaxis:{title:'Date'},yaxis:{title:'Mood Score'}});
 
-      const totalAffSpent = data.reduce((a,b) => a + b.AffectionSpent, 0);
-      const totalAffReceived = data.reduce((a,b) => a + b.AffectionReceived, 0);
-      const roas = (totalAffReceived / totalAffSpent).toFixed(2);
+Plotly.newPlot('trustChart',[{
+  x:dates,y:trust,type:'scatter',mode:'lines+markers',
+  line:{color:'#c792ff',width:3}
+}],{title:'Trust Score Over Time',xaxis:{title:'Date'},yaxis:{title:'Trust (%)'}});
 
-      document.getElementById('summary').innerHTML = `
-        <h2>Key Metrics</h2>
-        <p>
-          <b>Avg Mood:</b> ${avgMood} |
-          <b>Avg Trust:</b> ${avgTrust}% |
-          <b>Total Affection Units:</b> ${finalAffection} |
-          <b>ROAS (Return on Affection Spent):</b> ${roas}x
-        </p>
-      `;
+Plotly.newPlot('ltvChart',[{
+  x:dates,y:affection,type:'scatter',mode:'lines+markers',
+  line:{color:'#b07cff',width:4,shape:'spline'}
+}],{title:'Relationship LTV (Love Time Value)',xaxis:{title:'Date'},yaxis:{title:'Cumulative Affection'}});
 
-      // Mood chart
-      Plotly.newPlot('moodChart', [{
-        x: dates,
-        y: mood,
-        type: 'bar',
-        marker: { color: mood.map(m => m >= 0 ? '#77dd77' : '#ff6961') },
-      }], {
-        title: 'Mood Over Time',
-        xaxis: { title: 'Date' },
-        yaxis: { title: 'Mood Score' }
-      });
-
-      // Trust chart
-      Plotly.newPlot('trustChart', [{
-        x: dates,
-        y: trust,
-        type: 'scatter',
-        mode: 'lines+markers',
-        line: { color: '#ffb347', width: 3 },
-      }], {
-        title: 'Trust Score Over Time',
-        xaxis: { title: 'Date' },
-        yaxis: { title: 'Trust (%)' }
-      });
-
-      // Relationship LTV chart
-      Plotly.newPlot('ltvChart', [{
-        x: dates,
-        y: affection,
-        type: 'scatter',
-        mode: 'lines+markers',
-        line: { color: '#ff69b4', width: 4, shape: 'spline' },
-      }], {
-        title: 'Relationship LTV (Love Time Value)',
-        xaxis: { title: 'Date' },
-        yaxis: { title: 'Cumulative Affection' }
-      });
-
-      // Event type vs mood
-      const moodByEvent = eventTypes.map(type => {
-        const subset = data.filter(d => d.EventType === type);
-        const avg = subset.reduce((a,b) => a + b.MoodScore, 0) / subset.length;
-        return avg.toFixed(1);
-      });
-
-      Plotly.newPlot('eventChart', [{
-        x: eventTypes,
-        y: moodByEvent,
-        type: 'bar',
-        marker: { color: '#c7ceea' },
-      }], {
-        title: 'Average Mood by Event Type',
-        xaxis: { title: 'Event Type' },
-        yaxis: { title: 'Avg Mood' }
-      });
-    }
-  </script>
+const moodByEvent=eventTypes.map(t=>{
+  const s=data.filter(d=>d.EventType===t);
+  return (s.reduce((a,b)=>a+b.MoodScore,0)/s.length).toFixed(1);
+});
+Plotly.newPlot('eventChart',[{
+  x:eventTypes,y:moodByEvent,type:'bar',marker:{color:'#e0baff'}
+}],{title:'Average Mood by Event Type',xaxis:{title:'Event Type'},yaxis:{title:'Avg Mood'}});
+</script>
 </body>
 </html>
