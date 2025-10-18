@@ -6,38 +6,82 @@
 <title>Love Ledger Dashboard</title>
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <style>
-  body { margin:0; font-family:'Poppins',sans-serif; scroll-behavior:smooth;}
-  section {min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center;}
+  body {
+    margin:0;
+    font-family:'Poppins',sans-serif;
+    scroll-behavior:smooth;
+    overflow:hidden;
+  }
+  section {
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+  }
   .intro {
     background: radial-gradient(circle at top, #6b63ff 0%, #0d1129 80%);
-    color:white; text-align:center; padding:40px;
+    color:white;
+    text-align:center;
+    padding:40px;
+    transition:opacity 1s;
   }
-  .intro h1 {font-size:3em; margin-bottom:0.2em;}
-  .intro p {font-size:1.3em; color:#dcd6ff;}
+  .intro h1 {font-size:3em;margin-bottom:0.2em;}
+  .intro p {font-size:1.3em;color:#dcd6ff;}
   .intro button {
-    margin-top:2em; padding:15px 25px; border:none; border-radius:8px;
-    background:#c7a9ff; color:#0d1129; font-weight:bold; font-size:1em;
-    cursor:pointer; transition:0.3s; box-shadow:0 0 10px #c7a9ff;
+    margin-top:2em;
+    padding:15px 25px;
+    border:none;
+    border-radius:8px;
+    background:#c7a9ff;
+    color:#0d1129;
+    font-weight:bold;
+    font-size:1em;
+    cursor:pointer;
+    transition:0.3s;
+    box-shadow:0 0 10px #c7a9ff;
   }
-  .intro button:hover {background:#fff; color:#6b63ff;}
-  .dashboard {background:#faf7ff; color:#333; padding:40px;}
-  .chart {margin:40px 0; width:90%; max-width:1000px;}
+  .intro button:hover {background:#fff;color:#6b63ff;}
+  .dashboard {
+    background:#faf7ff;
+    color:#333;
+    padding:40px;
+    display:none;
+    opacity:0;
+    transition:opacity 1s;
+    flex-direction:column;
+    align-items:center;
+  }
+  .chart {margin:40px 0;width:90%;max-width:1000px;}
   .blush-btn {
-    background:#b07cff; color:white; border:none; padding:15px 25px;
-    border-radius:8px; font-size:1em; cursor:pointer; transition:0.3s;
+    background:#b07cff;
+    color:white;
+    border:none;
+    padding:15px 25px;
+    border-radius:8px;
+    font-size:1em;
+    cursor:pointer;
+    transition:0.3s;
   }
   .blush-btn:hover {background:#a45cf5;}
-  video {margin-top:20px; width:320px; border-radius:12px; display:none;}
+  video {
+    margin-top:20px;
+    width:320px;
+    border-radius:12px;
+    display:none;
+  }
 </style>
 </head>
 <body>
 
+<!-- PAGE 1 -->
 <section class="intro" id="intro">
   <h1>Happy Birthday Pranavi 💙</h1>
   <p>It's your silver jubilee, PJ — 4/25 years of us</p>
-  <button onclick="document.getElementById('dashboard').scrollIntoView({behavior:'smooth'});">View Our Story Metrics →</button>
+  <button onclick="showDashboard()">View Our Story Metrics →</button>
 </section>
 
+<!-- PAGE 2 -->
 <section class="dashboard" id="dashboard">
   <h2 style="color:#6b63ff;">Relationship Performance Dashboard</h2>
   <div id="summary" class="chart"></div>
@@ -52,7 +96,27 @@
 </section>
 
 <script>
-// --- embedded sample data (short version of your JSON) ---
+// Transition from greeting to dashboard
+function showDashboard() {
+  const intro = document.getElementById('intro');
+  const dash = document.getElementById('dashboard');
+  document.body.style.overflow = "hidden";
+  intro.style.opacity = '0';
+  setTimeout(() => {
+    intro.style.display = 'none';
+    dash.style.display = 'flex';
+    setTimeout(()=>{ dash.style.opacity = '1'; document.body.style.overflow = "auto"; },50);
+  }, 1000);
+}
+
+// Show video when button clicked
+function revealVideo() {
+  const vid=document.getElementById('loveVideo');
+  vid.style.display='block';
+  vid.scrollIntoView({behavior:'smooth'});
+}
+
+// Sample data
 const data = [
   {"Date":"2020-01-10","EventType":"Movie Night","MoodScore":8,"TrustScore":95,"CumulativeAffection":20},
   {"Date":"2020-02-14","EventType":"Valentine","MoodScore":10,"TrustScore":98,"CumulativeAffection":40},
@@ -65,19 +129,12 @@ const data = [
   {"Date":"2024-01-15","EventType":"Apology","MoodScore":6,"TrustScore":70,"CumulativeAffection":130}
 ];
 
-function revealVideo() {
-  const vid=document.getElementById('loveVideo');
-  vid.style.display='block';
-  vid.scrollIntoView({behavior:'smooth'});
-}
-
-// --- dashboard render ---
+// Render dashboard
 const dates=data.map(d=>d.Date);
 const mood=data.map(d=>d.MoodScore);
 const trust=data.map(d=>d.TrustScore);
 const affection=data.map(d=>d.CumulativeAffection);
 const eventTypes=[...new Set(data.map(d=>d.EventType))];
-
 const avgMood=(mood.reduce((a,b)=>a+b,0)/mood.length).toFixed(1);
 const avgTrust=(trust.reduce((a,b)=>a+b,0)/trust.length).toFixed(1);
 const finalAffection=affection[affection.length-1];
